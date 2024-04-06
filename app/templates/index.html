@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Display Data</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+      @import url("https://fonts.cdnfonts.com/css/sf-pro-display");
+
+      body {
+        font-family: "Roboto", sans-serif;
+        background-color: #f5f5f5;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .title {
+        font-family: "SF Pro Display", sans-serif;
+        font-size: 24px;
+        background: #4a30cf;
+        background: linear-gradient(to top, #4a30cf 0%, #cf1d23 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+      }
+
+      .chart-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .chart {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+      }
+
+      .summary {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      .summary h3 {
+        margin: 5px 0;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .summary p {
+        margin: 5px 0;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="title">
+        Hệ Thống Giám Sát Nhiệt Độ, Độ Ẩm và Nồng Độ Khí Gas
+      </div>
+
+      <div class="chart-container">
+        <div class="chart">
+          <div class="summary">
+            <h3>Biểu Đồ Nhiệt Độ</h3>
+            <p>Thông số tổng hợp</p>
+            <p id="tempSummary">Loading...</p>
+          </div>
+          <canvas id="tempChart"></canvas>
+        </div>
+        <div class="chart">
+          <div class="summary">
+            <h3>Biểu Đồ Độ Ẩm</h3>
+            <p>Thông số tổng hợp</p>
+            <p id="humSummary">Loading...</p>
+          </div>
+          <canvas id="humChart"></canvas>
+        </div>
+        <div class="chart">
+          <div class="summary">
+            <h3>Biểu Đồ Nồng Độ Khí Gas</h3>
+            <p>Thông số tổng hợp</p>
+            <p id="gasSummary">Loading...</p>
+          </div>
+          <canvas id="gasChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Thêm trường input ẩn để lưu trữ tên người dùng -->
+      <input type="hidden" id="username" value="{{ username }}">
+    </div>
+
+    <script>
+      var tempCtx = document.getElementById("tempChart").getContext("2d");
+      var tempChart = new Chart(tempCtx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Temperature",
+              data: [],
+              backgroundColor: "rgba(255, 99, 132, 0.2)",
+              borderColor: "rgba(255, 99, 132, 1)",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            yAxes: [
+              {
+                ticks: {
+                  beginAtZero: true,
+                },
+              },
+            ],
+          },
+        },
+      });
+
+      var humCtx = document.getElementById("humChart").getContext("2d");
+      var humChart = new Chart(humCtx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Humidity",
+              data: [],
+              backgroundColor: "rgba(54, 162, 235, 0.2)",
+              borderColor: "rgba(54, 162, 235, 1)",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            yAxes: [
+              {
+                ticks: {
+                  beginAtZero: true,
+                },
+              },
+            ],
+          },
+        },
+      });
+
+      var gasCtx = document.getElementById("gasChart").getContext("2d");
+      var gasChart = new Chart(gasCtx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Gas Concentration",
+              data: [],
+              backgroundColor: "rgba(255, 206, 86, 0.2)",
+              borderColor: "rgba(255, 206, 86, 1)",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            yAxes: [
+              {
+                ticks: {
+                  beginAtZero: true,
+                },
+              },
+            ],
+          },
+        },
+      });
+
+      $(document).ready(function () {
+        updateCharts(); // Cập nhật biểu đồ một lần khi trang được tải
+
+        // Cập nhật dữ liệu biểu đồ mỗi 10 giây
+        setInterval(updateCharts, 10000);
+      });
+
+      function updateCharts() {
+        // Lấy tên người dùng từ trường input ẩn
+        var username = $("#username").val();
+
+        // Gửi yêu cầu đến API để lấy dữ liệu mới nhất
+        $.getJSON("/admin/data?username=" + username, function (data) {
+          // Cập nhật biểu đồ nhiệt độ
+          updateChart(tempChart, data.temperature, "#tempSummary");
+
+          // Cập nhật biểu đồ độ ẩm
+          updateChart(humChart, data.humidity, "#humSummary");
+
+          // Cập nhật biểu đồ nồng độ khí gas
+          updateChart(gasChart, data.gas_concentration, "#gasSummary");
+        });
+      }
+
+      function updateChart(chart, value, summaryId) {
+        // Thêm dữ liệu mới vào biểu đồ
+        chart.data.labels.push(new Date().toLocaleTimeString());
+        chart.data.datasets[0].data.push(value);
+
+        // Giới hạn số lượng dữ liệu trên biểu đồ
+        if (chart.data.labels.length > 20) {
+          chart.data.labels.shift();
+          chart.data.datasets[0].data.shift();
+        }
+
+        // Cập nhật biểu đồ
+        chart.update();
+
+        // Cập nhật thông tin tóm tắt
+        $(summaryId).text(value);
+      }
+    </script>
+  </body>
+</html>
