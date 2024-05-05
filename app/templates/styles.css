@@ -1,0 +1,66 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+@import url("https://fonts.cdnfonts.com/css/sf-pro-display");
+
+body {
+    font-family: "Roboto", sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+.container {
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+.title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    height: 15rem;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+    margin-bottom: 20px;
+    font-family: "SF Pro Display", sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+	background: linear-gradient(to right, #30CFD0 0%, #330867 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.chart-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; 
+    gap: 20px;
+}
+
+.chart {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.summary {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.summary h3 {
+    margin: 5px 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.summary p {
+    margin: 5px 0;
+    font-size: 16px;
+}
